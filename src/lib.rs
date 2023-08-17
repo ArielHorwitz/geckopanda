@@ -2,18 +2,23 @@ use anyhow::Result;
 use async_trait::async_trait;
 use tokio::runtime::Runtime;
 pub mod backends;
+pub use backends::{
+    disk::Storage as DiskStorage, googledrive::Storage as GoogleDriveStorage,
+    s3::Storage as S3Storage,
+};
 
-#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub struct ObjectMetadata {
+    pub id: String,
     pub name: String,
     pub last_modified: String,
     pub size: u64,
 }
 
 impl ObjectMetadata {
-    pub fn new(name: &str, last_modified: &str, size: u64) -> Self {
+    pub fn new(id: &str, name: &str, last_modified: &str, size: u64) -> Self {
         Self {
+            id: id.to_owned(),
             name: name.to_owned(),
             last_modified: last_modified.to_owned(),
             size,
@@ -23,27 +28,43 @@ impl ObjectMetadata {
 
 #[async_trait]
 pub trait Backend {
+    /// Get a file metadata list.
     async fn list(&self) -> Result<Vec<ObjectMetadata>>;
 
-    async fn get(&self, file: &str) -> Result<Vec<u8>>;
+    /// Create a new file by name and get the id.
+    async fn create(&self, file_name: &str) -> Result<String>;
 
-    async fn put(&self, file: &str, data: &[u8]) -> Result<()>;
+    /// Get file data by id.
+    async fn get(&self, file_id: &str) -> Result<Vec<u8>>;
 
-    async fn delete(&self, file: &str) -> Result<()>;
+    /// Update file data by id.
+    async fn update(&self, file_id: &str, data: &[u8]) -> Result<()>;
 
+    /// Delete a file by id.
+    async fn delete(&self, file_id: &str) -> Result<()>;
+
+    /// Blocking version of `Self.list()`.
     fn list_sync(&self) -> Result<Vec<ObjectMetadata>> {
         Runtime::new()?.block_on(self.list())
     }
 
-    fn get_sync(&self, file: &str) -> Result<Vec<u8>> {
-        Runtime::new()?.block_on(self.get(file))
+    /// Blocking version of `Self.create()`.
+    fn create_sync(&self, file_name: &str) -> Result<String> {
+        Runtime::new()?.block_on(self.create(file_name))
     }
 
-    fn put_sync(&self, file: &str, data: &[u8]) -> Result<()> {
-        Runtime::new()?.block_on(self.put(file, data))
+    /// Blocking version of `Self.get()`.
+    fn get_sync(&self, file_id: &str) -> Result<Vec<u8>> {
+        Runtime::new()?.block_on(self.get(file_id))
     }
 
-    fn delete_sync(&self, file: &str) -> Result<()> {
-        Runtime::new()?.block_on(self.delete(file))
+    /// Blocking version of `Self.update()`.
+    fn update_sync(&self, file_id: &str, data: &[u8]) -> Result<()> {
+        Runtime::new()?.block_on(self.update(file_id, data))
+    }
+
+    /// Blocking version of `Self.delete()`.
+    fn delete_sync(&self, file_id: &str) -> Result<()> {
+        Runtime::new()?.block_on(self.delete(file_id))
     }
 }

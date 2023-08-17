@@ -25,24 +25,32 @@ impl Backend for Storage {
         Ok(contents)
     }
 
-    async fn get(&self, file: &str) -> Result<Vec<u8>> {
-        Ok(fs::read(self.root.join(file))?)
+    async fn create(&self, file_name: &str) -> Result<String> {
+        self.update(file_name, "".as_bytes()).await?;
+        Ok(file_name.to_owned())
     }
 
-    async fn put(&self, file: &str, data: &[u8]) -> Result<()> {
-        Ok(fs::write(self.root.join(file), data)?)
+    async fn get(&self, file_id: &str) -> Result<Vec<u8>> {
+        Ok(fs::read(self.root.join(file_id))?)
     }
 
-    async fn delete(&self, file: &str) -> Result<()> {
-        Ok(fs::remove_file(self.root.join(file))?)
+    async fn update(&self, file_id: &str, data: &[u8]) -> Result<()> {
+        Ok(fs::write(self.root.join(file_id), data)?)
+    }
+
+    async fn delete(&self, file_id: &str) -> Result<()> {
+        Ok(fs::remove_file(self.root.join(file_id))?)
     }
 }
 
 fn filter_file(entry_result: std::io::Result<fs::DirEntry>) -> Option<ObjectMetadata> {
     let entry = entry_result.ok()?;
     let metadata = entry.metadata().ok()?;
+    let entry_file_name = entry.file_name();
+    let file_name = entry_file_name.to_string_lossy();
     Some(ObjectMetadata::new(
-        &entry.file_name().to_string_lossy(),
+        &file_name,
+        &file_name,
         &format!("{:?}", metadata.modified().ok()?),
         metadata.len(),
     ))

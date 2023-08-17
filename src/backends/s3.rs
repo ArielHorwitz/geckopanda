@@ -43,6 +43,7 @@ impl Backend for Storage {
         let objects = contents
             .iter()
             .map(|o| ObjectMetadata {
+                id: o.key.to_owned(),
                 name: o.key.to_owned(),
                 last_modified: o.last_modified.to_owned(),
                 size: o.size.to_owned(),
@@ -51,20 +52,25 @@ impl Backend for Storage {
         Ok(objects)
     }
 
-    async fn get(&self, file: &str) -> Result<Vec<u8>> {
-        let object = self.bucket.get_object(file).await?;
+    async fn create(&self, file_id: &str) -> Result<String> {
+        self.update(file_id, "".as_bytes()).await?;
+        Ok(file_id.to_owned())
+    }
+
+    async fn get(&self, file_id: &str) -> Result<Vec<u8>> {
+        let object = self.bucket.get_object(file_id).await?;
         check_status(&object)?;
         Ok(object.to_vec())
     }
 
-    async fn put(&self, file: &str, data: &[u8]) -> Result<()> {
-        let response = self.bucket.put_object(file, data).await?;
+    async fn update(&self, file_id: &str, data: &[u8]) -> Result<()> {
+        let response = self.bucket.put_object(file_id, data).await?;
         check_status(&response)?;
         Ok(())
     }
 
-    async fn delete(&self, file: &str) -> Result<()> {
-        let response = self.bucket.delete_object(file).await?;
+    async fn delete(&self, file_id: &str) -> Result<()> {
+        let response = self.bucket.delete_object(file_id).await?;
         check_status(&response)?;
         Ok(())
     }

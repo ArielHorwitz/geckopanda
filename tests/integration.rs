@@ -1,17 +1,30 @@
-use geckopanda::{Backend, GoogleDriveStorage};
-use std::path::Path;
+use anyhow::Result;
+use geckopanda::{Backend, DiskStorage, GoogleDriveStorage};
 
 #[test]
-fn google_drive() {
-    let storage = GoogleDriveStorage::new(
-        &Path::new("client_secret.json"),
-        &Path::new("tokencache.json"),
-        &vec!["https://www.googleapis.com/auth/drive.file"],
-    ).unwrap();
-    let data = "manual test file content".as_bytes();
-    let file_id = storage.create_sync("manual_test_file").unwrap();
-    storage.update_sync(&file_id, data).unwrap();
-    let drive_data = storage.get_sync(&file_id).unwrap();
+fn storage_disk() -> Result<()> {
+    let storage = DiskStorage::new("storage")?;
+    test_storage(storage)
+}
+
+#[test]
+fn storage_google_drive() -> Result<()> {
+    let storage = GoogleDriveStorage::new("client_secret.json", "tokencache.json")?;
+    test_storage(storage)
+}
+
+// TODO test s3
+
+fn test_storage(storage: impl Backend) -> Result<()> {
+    let file_count = storage.list_sync()?.len();
+    let file_id = storage.create_sync("test.file")?;
+    assert_eq!(file_count + 1, storage.list_sync()?.len());
+    let data = "test file content".as_bytes();
+    storage.update_sync(&file_id, data)?;
+    let drive_data = storage.get_sync(&file_id)?;
     assert_eq!(data, drive_data);
-    storage.delete_sync(&file_id).unwrap();
+    assert_eq!(file_count + 1, storage.list_sync()?.len());
+    storage.delete_sync(&file_id)?;
+    assert_eq!(file_count, storage.list_sync()?.len());
+    Ok(())
 }

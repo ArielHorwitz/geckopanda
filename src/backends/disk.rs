@@ -2,7 +2,7 @@ use crate::{Backend, ObjectMetadata};
 use anyhow::Result;
 use async_trait::async_trait;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug)]
 pub struct Storage {
@@ -10,7 +10,8 @@ pub struct Storage {
 }
 
 impl Storage {
-    pub fn new(root_path: PathBuf) -> Result<Self> {
+    pub fn new(root_path: &str) -> Result<Self> {
+        let root_path = Path::new(root_path).to_path_buf();
         if !root_path.is_dir() {
             fs::create_dir_all(&root_path)?;
         }

@@ -17,14 +17,13 @@ type GoogleDriveHub = DriveHub<hyper_rustls::HttpsConnector<hyper::client::HttpC
 async fn get_hub(
     client_secret: &Path,
     token_cache: &Path,
-    scopes: &Vec<&str>,
 ) -> Result<GoogleDriveHub> {
     let secret = get_secret(client_secret)?;
     let auth = Authenticator::builder(secret, ReturnMethod::HTTPRedirect)
         .persist_tokens_to_disk(token_cache)
         .build()
         .await?;
-    auth.token(scopes).await?;
+    auth.token(&["https://www.googleapis.com/auth/drive.file"]).await?;
     let client = hyper::Client::builder().build(
         hyper_rustls::HttpsConnectorBuilder::new()
             .with_native_roots()
@@ -94,11 +93,10 @@ pub struct Storage {
 
 impl Storage {
     pub fn new(
-    client_secret: &Path,
-    token_cache: &Path,
-    scopes: &Vec<&str>,
+    client_secret: &str,
+    token_cache: &str,
 ) -> Result<Self> {
-        let hub = get_hub(client_secret, token_cache, scopes);
+        let hub = get_hub(&Path::new(client_secret), &Path::new(token_cache));
         let hub = Runtime::new()?.block_on(hub)?;
         Ok(Self { hub })
     }

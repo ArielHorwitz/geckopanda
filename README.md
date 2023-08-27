@@ -21,3 +21,8 @@ fn main() {
     storage.delete_sync(&file_id).unwrap();
 }
 ```
+
+Check out the examples:
+```console
+cargo run --example google_drive
+```

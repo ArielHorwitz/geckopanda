@@ -4,7 +4,7 @@ use std::fs::read_to_string;
 
 #[test]
 fn full_disk() -> Result<()> {
-    let storage = DiskStorage::new("storage")?;
+    let storage = DiskStorage::new("storagecache")?;
     test_storage(storage)
 }
 

@@ -1,19 +1,24 @@
 use anyhow::Result;
-use geckopanda::{Storage, DiskStorage, GoogleDriveStorage};
+use geckopanda::{Storage, DiskStorage, GoogleDriveStorage, S3Storage};
 
 #[test]
-fn storage_disk() -> Result<()> {
+fn full_disk() -> Result<()> {
     let storage = DiskStorage::new("storage")?;
     test_storage(storage)
 }
 
 #[test]
-fn storage_google_drive() -> Result<()> {
+fn full_google_drive() -> Result<()> {
     let storage = GoogleDriveStorage::new("client_secret.json", "tokencache.json")?;
     test_storage(storage)
 }
 
-// TODO test s3
+#[test]
+fn full_s3() -> Result<()> {
+    let storage = S3Storage::new("s3config-geckopanda-test.toml")?;
+    test_storage(storage)
+}
+
 
 fn test_storage(storage: impl Storage) -> Result<()> {
     let file_count = storage.list_sync()?.len();

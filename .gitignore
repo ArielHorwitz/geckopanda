@@ -1,3 +1,5 @@
 /target
 client_secret.json
 tokencache.json
+s3config.toml
+s3config-geckopanda-test.toml

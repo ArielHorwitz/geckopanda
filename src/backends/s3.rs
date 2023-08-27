@@ -4,33 +4,39 @@ use async_trait::async_trait;
 use s3::creds::Credentials;
 use s3::request::request_trait::ResponseData;
 use s3::{Bucket, Region};
+use serde::Deserialize;
+use std::fs;
+use toml;
 
 #[derive(Clone, Debug)]
 pub struct Backend {
     bucket: Bucket,
 }
 
-impl Backend {
-    pub fn new(
-        bucket_name: &str,
-        region: &str,
-        secret_key: &str,
-        access_key: &str,
-    ) -> Result<Self> {
-        let region = region.parse()?;
-        let creds = Credentials::new(Some(secret_key), Some(access_key), None, None, None)?;
-        let bucket = Bucket::new(bucket_name, region, creds)?;
-        Ok(Self { bucket })
-    }
+#[derive(Deserialize)]
+struct S3Config {
+   bucket_name: String,
+   region: String,
+   endpoint: String,
+   access_key_id: String,
+   access_key_secret: String,
+}
 
-    // Provided as a workaround for rust-s3 missing region
-    pub fn new_israel(bucket_name: &str, secret_key: &str, access_key: &str) -> Result<Self> {
-        let region = Region::Custom {
-            region: "il-central-1".to_owned(),
-            endpoint: "s3.il-central-1.amazonaws.com".to_owned(),
+impl Backend {
+    pub fn new(config_file: &str) -> Result<Self> {
+        let config: S3Config = toml::from_str(&fs::read_to_string(config_file)?)?;
+        let region = match config.endpoint.is_empty() {
+            false => Region::Custom { region: config.region, endpoint: config.endpoint },
+            true => config.region.parse()?,
         };
-        let creds = Credentials::new(Some(secret_key), Some(access_key), None, None, None)?;
-        let bucket = Bucket::new(bucket_name, region, creds)?;
+        let creds = Credentials::new(
+            Some(&config.access_key_id),
+            Some(&config.access_key_secret),
+            None,
+            None,
+            None,
+        )?;
+        let bucket = Bucket::new(&config.bucket_name, region, creds)?;
         Ok(Self { bucket })
     }
 }

@@ -1,5 +1,6 @@
 use anyhow::Result;
 use geckopanda::{Storage, DiskStorage, GoogleDriveStorage, S3Storage};
+use std::fs::read_to_string;
 
 #[test]
 fn full_disk() -> Result<()> {
@@ -9,13 +10,15 @@ fn full_disk() -> Result<()> {
 
 #[test]
 fn full_google_drive() -> Result<()> {
-    let storage = GoogleDriveStorage::new("client_secret.json", "tokencache.json")?;
+    let client_secret = read_to_string("client_secret.json")?;
+    let storage = GoogleDriveStorage::new(&client_secret, "tokencache.json")?;
     test_storage(storage)
 }
 
 #[test]
 fn full_s3() -> Result<()> {
-    let storage = S3Storage::new("s3config-geckopanda-test.toml")?;
+    let config_data = read_to_string("s3config-geckopanda-test.toml")?;
+    let storage = S3Storage::new(&config_data)?;
     test_storage(storage)
 }
 

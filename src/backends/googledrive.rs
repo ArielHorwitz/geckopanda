@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use google_drive3::{hyper, hyper_rustls, oauth2, DriveHub};
 use google_drive3::api::{File, Scope};
 use mime::Mime;
-use oauth2::read_application_secret;
+use oauth2::parse_application_secret;
 use oauth2::authenticator_delegate::InstalledFlowDelegate;
 use oauth2::InstalledFlowAuthenticator as Authenticator;
 use oauth2::InstalledFlowReturnMethod as ReturnMethod;
@@ -20,11 +20,8 @@ pub struct Backend {
 }
 
 impl Backend {
-    pub fn new(
-    client_secret: &str,
-    token_cache: &str,
-) -> Result<Self> {
-        let get_hub_coro = get_hub(&Path::new(client_secret), &Path::new(token_cache));
+    pub fn new(client_secret: &str, token_cache: &str) -> Result<Self> {
+        let get_hub_coro = get_hub(client_secret, token_cache);
         let hub = Runtime::new()?.block_on(get_hub_coro)?;
         Ok(Self { hub })
     }
@@ -111,13 +108,10 @@ impl Storage for Backend {
 
 type GoogleDriveHub = DriveHub<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>;
 
-async fn get_hub(
-    client_secret: &Path,
-    token_cache: &Path,
-) -> Result<GoogleDriveHub> {
-    let secret = read_application_secret(client_secret).await?;
+async fn get_hub(client_secret: &str, token_cache: &str) -> Result<GoogleDriveHub> {
+    let secret = parse_application_secret(client_secret)?;
     let auth = Authenticator::builder(secret, ReturnMethod::HTTPRedirect)
-        .persist_tokens_to_disk(token_cache)
+        .persist_tokens_to_disk(Path::new(token_cache))
         .flow_delegate(Box::new(BrowserDelegate))
         .build()
         .await?;

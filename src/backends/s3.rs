@@ -5,7 +5,6 @@ use s3::creds::Credentials;
 use s3::request::request_trait::ResponseData;
 use s3::{Bucket, Region};
 use serde::Deserialize;
-use std::fs;
 use toml;
 
 #[derive(Clone, Debug)]
@@ -23,11 +22,12 @@ struct S3Config {
 }
 
 impl Backend {
-    pub fn new(config_file: &str) -> Result<Self> {
-        let config: S3Config = toml::from_str(&fs::read_to_string(config_file)?)?;
-        let region = match config.endpoint.is_empty() {
-            false => Region::Custom { region: config.region, endpoint: config.endpoint },
-            true => config.region.parse()?,
+    pub fn new(config_data: &str) -> Result<Self> {
+        let config: S3Config = toml::from_str(config_data)?;
+        let region = if config.endpoint.is_empty() {
+            config.region.parse()?
+         } else {
+            Region::Custom { region: config.region, endpoint: config.endpoint }
         };
         let creds = Credentials::new(
             Some(&config.access_key_id),

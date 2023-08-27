@@ -2,7 +2,10 @@ use anyhow::Result;
 use geckopanda::{Storage, GoogleDriveStorage};
 
 fn main() -> Result<()> {
-    let storage = GoogleDriveStorage::new("client_secret.json", "tokencache.json")?;
+    /* We use the [include_str] macro to insert client secrets directly into
+    binary. Environment variables can also be used to insert secrets. */
+    let client_secret = include_str!("../client_secret.json");
+    let storage = GoogleDriveStorage::new(client_secret, "tokencache.json")?;
     let file_id = storage.create_sync("example.file")?;
     println!("created file id {file_id}");
     let data = "example file content";

@@ -1,17 +1,17 @@
-use crate::{Storage, ObjectMetadata};
+use crate::{ObjectMetadata, Storage};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
-use google_drive3::{hyper, hyper_rustls, oauth2, DriveHub};
 use google_drive3::api::{File, Scope};
+use google_drive3::{hyper, hyper_rustls, oauth2, DriveHub};
 use mime::Mime;
-use oauth2::parse_application_secret;
 use oauth2::authenticator_delegate::InstalledFlowDelegate;
+use oauth2::parse_application_secret;
 use oauth2::InstalledFlowAuthenticator as Authenticator;
 use oauth2::InstalledFlowReturnMethod as ReturnMethod;
 use std::future::Future;
+use std::io::Write;
 use std::path::Path;
 use std::pin::Pin;
-use std::io::Write;
 use tokio::runtime::Runtime;
 
 #[derive(Clone)]
@@ -30,11 +30,15 @@ impl Backend {
 #[async_trait]
 impl Storage for Backend {
     async fn list(&self) -> Result<Vec<ObjectMetadata>> {
-        let (_response, filelist) = self.hub
+        let (_response, filelist) = self
+            .hub
             .files()
             .list()
             .page_size(10)
-            .param("fields", "files(id,name,modifiedTime,size,trashed,explicitlyTrashed)")
+            .param(
+                "fields",
+                "files(id,name,modifiedTime,size,trashed,explicitlyTrashed)",
+            )
             .add_scope(Scope::File)
             .doit()
             .await?;
@@ -44,7 +48,7 @@ impl Storage for Backend {
             .iter()
             .filter_map(|file| {
                 if file.trashed? | file.explicitly_trashed? {
-                    return None
+                    return None;
                 };
                 Some(ObjectMetadata::new(
                     &file.id.clone()?,
@@ -60,7 +64,8 @@ impl Storage for Backend {
         let mime_type = "application/octet-stream".parse::<Mime>()?;
         let mut file_metadata = File::default();
         file_metadata.name = Some(file_name.to_owned());
-        let (_response, file) = self.hub
+        let (_response, file) = self
+            .hub
             .files()
             .create(file_metadata)
             .add_scope(Scope::File)
@@ -70,7 +75,8 @@ impl Storage for Backend {
     }
 
     async fn get(&self, file_id: &str) -> Result<Vec<u8>> {
-        let (response, _file) = self.hub
+        let (response, _file) = self
+            .hub
             .files()
             .get(file_id)
             .param("alt", "media")
@@ -93,8 +99,8 @@ impl Storage for Backend {
             .upload(file, mime_type)
             .await?;
         Ok(())
-
     }
+
     async fn delete(&self, file_id: &str) -> Result<()> {
         self.hub
             .files()
@@ -148,4 +154,3 @@ async fn browser_delegate(url: &str, need_code: bool) -> Result<String, String> 
     webbrowser::open(url).map_err(|e| format!("{e:?}"))?;
     Ok(String::new())
 }
-

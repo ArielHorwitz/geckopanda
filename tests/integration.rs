@@ -1,5 +1,5 @@
 use anyhow::Result;
-use geckopanda::{Storage, DiskStorage, GoogleDriveStorage, S3Storage};
+use geckopanda::{DiskStorage, GoogleDriveStorage, S3Storage, Storage};
 use std::fs::read_to_string;
 
 #[test]
@@ -21,7 +21,6 @@ fn full_s3() -> Result<()> {
     let storage = S3Storage::new(&config_data)?;
     test_storage(storage)
 }
-
 
 fn test_storage(storage: impl Storage) -> Result<()> {
     let file_count = storage.list_sync()?.len();

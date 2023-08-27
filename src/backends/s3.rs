@@ -1,4 +1,4 @@
-use crate::{Storage, ObjectMetadata};
+use crate::{ObjectMetadata, Storage};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use s3::creds::Credentials;
@@ -14,11 +14,11 @@ pub struct Backend {
 
 #[derive(Deserialize)]
 struct S3Config {
-   bucket_name: String,
-   region: String,
-   endpoint: String,
-   access_key_id: String,
-   access_key_secret: String,
+    bucket_name: String,
+    region: String,
+    endpoint: String,
+    access_key_id: String,
+    access_key_secret: String,
 }
 
 impl Backend {
@@ -26,8 +26,11 @@ impl Backend {
         let config: S3Config = toml::from_str(config_data)?;
         let region = if config.endpoint.is_empty() {
             config.region.parse()?
-         } else {
-            Region::Custom { region: config.region, endpoint: config.endpoint }
+        } else {
+            Region::Custom {
+                region: config.region,
+                endpoint: config.endpoint,
+            }
         };
         let creds = Credentials::new(
             Some(&config.access_key_id),

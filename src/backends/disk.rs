@@ -1,4 +1,4 @@
-use crate::{Storage, ObjectMetadata};
+use crate::{ObjectMetadata, Storage};
 use anyhow::Result;
 use async_trait::async_trait;
 use std::fs;

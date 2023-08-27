@@ -1,5 +1,5 @@
 use anyhow::Result;
-use geckopanda::{Storage, GoogleDriveStorage};
+use geckopanda::{GoogleDriveStorage, Storage};
 
 fn main() -> Result<()> {
     /* We use the [include_str] macro to insert client secrets directly into
@@ -18,4 +18,3 @@ fn main() -> Result<()> {
     println!("deleted file id {file_id}");
     Ok(())
 }
-

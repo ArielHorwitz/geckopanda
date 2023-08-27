@@ -1,4 +1,4 @@
-use crate::{Backend, ObjectMetadata};
+use crate::{Storage, ObjectMetadata};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use s3::creds::Credentials;
@@ -6,11 +6,11 @@ use s3::request::request_trait::ResponseData;
 use s3::{Bucket, Region};
 
 #[derive(Clone, Debug)]
-pub struct Storage {
+pub struct Backend {
     bucket: Bucket,
 }
 
-impl Storage {
+impl Backend {
     pub fn new(
         bucket_name: &str,
         region: &str,
@@ -36,7 +36,7 @@ impl Storage {
 }
 
 #[async_trait]
-impl Backend for Storage {
+impl Storage for Backend {
     async fn list(&self) -> Result<Vec<ObjectMetadata>> {
         let mut listing = self.bucket.list("".to_owned(), None).await?;
         let contents = listing.pop().expect("expected a single result").contents;

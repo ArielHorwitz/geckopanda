@@ -1,5 +1,5 @@
 use anyhow::Result;
-use geckopanda::{Backend, DiskStorage, GoogleDriveStorage};
+use geckopanda::{Storage, DiskStorage, GoogleDriveStorage};
 
 #[test]
 fn storage_disk() -> Result<()> {
@@ -15,7 +15,7 @@ fn storage_google_drive() -> Result<()> {
 
 // TODO test s3
 
-fn test_storage(storage: impl Backend) -> Result<()> {
+fn test_storage(storage: impl Storage) -> Result<()> {
     let file_count = storage.list_sync()?.len();
     let file_id = storage.create_sync("test.file")?;
     assert_eq!(file_count + 1, storage.list_sync()?.len());

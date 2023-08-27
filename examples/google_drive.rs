@@ -1,5 +1,5 @@
 use anyhow::Result;
-use geckopanda::{Backend, GoogleDriveStorage};
+use geckopanda::{Storage, GoogleDriveStorage};
 
 fn main() -> Result<()> {
     let storage = GoogleDriveStorage::new("client_secret.json", "tokencache.json")?;

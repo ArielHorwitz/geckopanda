@@ -1,4 +1,4 @@
-use crate::{Backend, ObjectMetadata};
+use crate::{Storage, ObjectMetadata};
 use anyhow::{anyhow, Result};
 use async_trait::async_trait;
 use google_drive3::{hyper, hyper_rustls, oauth2, DriveHub};
@@ -15,11 +15,11 @@ use std::io::Write;
 use tokio::runtime::Runtime;
 
 #[derive(Clone)]
-pub struct Storage {
+pub struct Backend {
     hub: GoogleDriveHub,
 }
 
-impl Storage {
+impl Backend {
     pub fn new(
     client_secret: &str,
     token_cache: &str,
@@ -31,7 +31,7 @@ impl Storage {
 }
 
 #[async_trait]
-impl Backend for Storage {
+impl Storage for Backend {
     async fn list(&self) -> Result<Vec<ObjectMetadata>> {
         let (_response, filelist) = self.hub
             .files()

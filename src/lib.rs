@@ -4,11 +4,11 @@ use anyhow::Result;
 use async_trait::async_trait;
 use tokio::runtime::Runtime;
 pub mod backends;
-pub use backends::disk::Storage as DiskStorage;
-pub use backends::googledrive::Storage as GoogleDriveStorage;
-pub use backends::s3::Storage as S3Storage;
+pub use backends::disk::Backend as DiskStorage;
+pub use backends::googledrive::Backend as GoogleDriveStorage;
+pub use backends::s3::Backend as S3Storage;
 
-/// Metadata of a specific file. Returned by [Backend::list].
+/// Metadata of a specific file. Returned by [Storage::list].
 #[derive(Clone, Debug)]
 pub struct ObjectMetadata {
     pub id: String,
@@ -30,7 +30,7 @@ impl ObjectMetadata {
 
 /// A trait for implementing file management.
 #[async_trait]
-pub trait Backend {
+pub trait Storage {
     /// Get a file metadata list.
     async fn list(&self) -> Result<Vec<ObjectMetadata>>;
 

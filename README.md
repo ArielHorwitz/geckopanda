@@ -4,10 +4,10 @@ Save and load files from local disk, Google Drive, or Amazon S3.
 ## Usage
 ```rust
 // main.rs
-use geckopanda::{Backend, DiskStorage};
+use geckopanda::{Storage, DiskStorage};
 
 fn main() {
-    // Create the storage backend
+    // Create the storage on disk
     let storage = DiskStorage::new("storagecache").unwrap();
     // Create a new file
     let file_id = storage.create_sync("example.file").unwrap();

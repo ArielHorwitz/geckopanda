@@ -1,15 +1,15 @@
-use crate::{Backend, ObjectMetadata};
+use crate::{Storage, ObjectMetadata};
 use anyhow::Result;
 use async_trait::async_trait;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug)]
-pub struct Storage {
+pub struct Backend {
     root: PathBuf,
 }
 
-impl Storage {
+impl Backend {
     pub fn new(root_path: &str) -> Result<Self> {
         let root_path = Path::new(root_path).to_path_buf();
         if !root_path.is_dir() {
@@ -20,7 +20,7 @@ impl Storage {
 }
 
 #[async_trait]
-impl Backend for Storage {
+impl Storage for Backend {
     async fn list(&self) -> Result<Vec<ObjectMetadata>> {
         let contents = self.root.read_dir()?.filter_map(filter_file).collect();
         Ok(contents)

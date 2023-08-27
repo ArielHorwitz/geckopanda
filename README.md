@@ -24,6 +24,6 @@ fn main() {
 
 Check out the examples:
 ```console
-cargo run --example google_drive
+cargo run --example googledrive
 cargo run --example s3
 ```

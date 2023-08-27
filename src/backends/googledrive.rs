@@ -4,87 +4,15 @@ use async_trait::async_trait;
 use google_drive3::{hyper, hyper_rustls, oauth2, DriveHub};
 use google_drive3::api::{File, Scope};
 use mime::Mime;
+use oauth2::read_application_secret;
+use oauth2::authenticator_delegate::InstalledFlowDelegate;
 use oauth2::InstalledFlowAuthenticator as Authenticator;
 use oauth2::InstalledFlowReturnMethod as ReturnMethod;
-use std::fs;
+use std::future::Future;
 use std::path::Path;
+use std::pin::Pin;
 use std::io::Write;
 use tokio::runtime::Runtime;
-use json::{self, JsonValue};
-
-type GoogleDriveHub = DriveHub<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>;
-
-async fn get_hub(
-    client_secret: &Path,
-    token_cache: &Path,
-) -> Result<GoogleDriveHub> {
-    let secret = get_secret(client_secret)?;
-    let auth = Authenticator::builder(secret, ReturnMethod::HTTPRedirect)
-        .persist_tokens_to_disk(token_cache)
-        .build()
-        .await?;
-    auth.token(&["https://www.googleapis.com/auth/drive.file"]).await?;
-    let client = hyper::Client::builder().build(
-        hyper_rustls::HttpsConnectorBuilder::new()
-            .with_native_roots()
-            .https_or_http()
-            .enable_http1()
-            .build(),
-    );
-    let hub = DriveHub::new(client, auth);
-    // make any request to prompt oauth process
-    hub.files().list().doit().await?;
-    Ok(hub)
-}
-
-fn get_secret(client_secret: &Path) -> Result<oauth2::ApplicationSecret> {
-    fn get_json_string(data: &json::object::Object, key: &str) -> Result<String> {
-        match data.get(key).ok_or(anyhow!("missing {key}"))? {
-            JsonValue::String(s) => Ok(s.to_owned()),
-            JsonValue::Short(s) => Ok(s.as_str().to_owned()),
-            o => Err(anyhow!("expected a string for {key}, got {o:?}")),
-        }
-    }
-
-    fn get_json_array_strings(data: &json::object::Object, key: &str) -> Result<Vec<String>> {
-        match data.get(key).ok_or(anyhow!("missing {key}"))? {
-            JsonValue::Array(arr) => {
-                let mut arr_str = Vec::new();
-                for jv in arr {
-                    arr_str.push(match jv {
-                        JsonValue::String(s) => s.to_owned(),
-                        JsonValue::Short(s) => s.as_str().to_owned(),
-                        o => return Err(anyhow!("found non-string in array: {o:?}")),
-                    });
-                }
-                Ok(arr_str)
-            }
-            o => Err(anyhow!("expected an array for {key}, got {o:?}")),
-        }
-    }
-
-    let json_contents = fs::read_to_string(client_secret)?;
-    let secret_data = match json::parse(&json_contents)? {
-        JsonValue::Object(d) => Ok(d),
-        _ => Err(anyhow!("missing data in client_secret json")),
-    }?;
-    let secret_data = match secret_data.get("installed") {
-        Some(JsonValue::Object(d)) => Ok(d),
-        _ => Err(anyhow!("missing data in client_secret json")),
-    }?;
-    let app_secret = oauth2::ApplicationSecret {
-        client_id: get_json_string(secret_data, "client_id")?,
-        client_secret: get_json_string(secret_data, "client_secret")?,
-        token_uri: get_json_string(secret_data, "token_uri")?,
-        auth_uri: get_json_string(secret_data, "auth_uri")?,
-        redirect_uris: get_json_array_strings(secret_data, "redirect_uris")?,
-        project_id: Some(get_json_string(secret_data, "project_id")?),
-        client_email: None,
-        auth_provider_x509_cert_url: Some(get_json_string(secret_data, "auth_provider_x509_cert_url")?),
-        client_x509_cert_url: None,
-    };
-    Ok(app_secret)
-}
 
 #[derive(Clone)]
 pub struct Storage {
@@ -96,13 +24,11 @@ impl Storage {
     client_secret: &str,
     token_cache: &str,
 ) -> Result<Self> {
-        let hub = get_hub(&Path::new(client_secret), &Path::new(token_cache));
-        let hub = Runtime::new()?.block_on(hub)?;
+        let get_hub_coro = get_hub(&Path::new(client_secret), &Path::new(token_cache));
+        let hub = Runtime::new()?.block_on(get_hub_coro)?;
         Ok(Self { hub })
     }
 }
-
-const FIELDS: &str = "files(id,name,modifiedTime,size,trashed,explicitlyTrashed)";
 
 #[async_trait]
 impl Backend for Storage {
@@ -111,7 +37,8 @@ impl Backend for Storage {
             .files()
             .list()
             .page_size(10)
-            .param("fields", FIELDS)
+            .param("fields", "files(id,name,modifiedTime,size,trashed,explicitlyTrashed)")
+            .add_scope(Scope::File)
             .doit()
             .await?;
         Ok(filelist
@@ -139,6 +66,7 @@ impl Backend for Storage {
         let (_response, file) = self.hub
             .files()
             .create(file_metadata)
+            .add_scope(Scope::File)
             .upload(tempfile::tempfile()?, mime_type)
             .await?;
         file.id.ok_or(anyhow!("missing file id"))
@@ -149,7 +77,7 @@ impl Backend for Storage {
             .files()
             .get(file_id)
             .param("alt", "media")
-            .add_scope(Scope::Full)
+            .add_scope(Scope::File)
             .doit()
             .await?;
         let body = response.into_body();
@@ -164,7 +92,7 @@ impl Backend for Storage {
         self.hub
             .files()
             .update(File::default(), file_id)
-            .add_scope(Scope::Full)
+            .add_scope(Scope::File)
             .upload(file, mime_type)
             .await?;
         Ok(())
@@ -174,10 +102,56 @@ impl Backend for Storage {
         self.hub
             .files()
             .delete(file_id)
-            .add_scope(Scope::Full)
+            .add_scope(Scope::File)
             .doit()
             .await?;
         Ok(())
     }
+}
+
+type GoogleDriveHub = DriveHub<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>;
+
+async fn get_hub(
+    client_secret: &Path,
+    token_cache: &Path,
+) -> Result<GoogleDriveHub> {
+    let secret = read_application_secret(client_secret).await?;
+    let auth = Authenticator::builder(secret, ReturnMethod::HTTPRedirect)
+        .persist_tokens_to_disk(token_cache)
+        .flow_delegate(Box::new(BrowserDelegate))
+        .build()
+        .await?;
+    let scopes = &["https://www.googleapis.com/auth/drive.file"];
+    auth.token(scopes).await?;
+    let client = hyper::Client::builder().build(
+        hyper_rustls::HttpsConnectorBuilder::new()
+            .with_native_roots()
+            .https_or_http()
+            .enable_http1()
+            .build(),
+    );
+    let hub = DriveHub::new(client, auth);
+    Ok(hub)
+}
+
+#[derive(Copy, Clone)]
+struct BrowserDelegate;
+
+impl InstalledFlowDelegate for BrowserDelegate {
+    fn present_user_url<'a>(
+        &'a self,
+        url: &'a str,
+        need_code: bool,
+    ) -> Pin<Box<dyn Future<Output = Result<String, String>> + Send + 'a>> {
+        Box::pin(browser_delegate(url, need_code))
+    }
+}
+
+async fn browser_delegate(url: &str, need_code: bool) -> Result<String, String> {
+    if need_code {
+        unimplemented!("manual oauth2 user input not supported");
+    }
+    webbrowser::open(url).map_err(|e| format!("{e:?}"))?;
+    Ok(String::new())
 }
 

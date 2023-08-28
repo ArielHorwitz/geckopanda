@@ -1,29 +1,37 @@
 # GeckoPanda
 Save and load files from local disk, Google Drive, or Amazon S3.
 
+This crate provides the `Storage` trait and several backends that implement it,
+providing a very simple API for listing, creating, updating, and deleting files.
+These operations can be done either synchronously or asynchronously.
+
 ## Usage
 ```rust
-// main.rs
-use geckopanda::{Storage, DiskStorage};
+use geckopanda::{LocalDiskStorage, Storage};
 
 fn main() {
-    // Create the storage on disk
-    let storage = DiskStorage::new("storagecache").unwrap();
-    // Create a new file
+    let storage = LocalDiskStorage::new("./storagecache").unwrap();
+    // See also `geckopanda::GoogleDriveStorage` and `geckopanda::S3Storage`
+
     let file_id = storage.create_sync("example.file").unwrap();
-    // Upload data to file
-    let upload_data = "example file contents".as_bytes();
-    storage.update_sync(&file_id, upload_data).unwrap();
-    // Download file data
-    let downloaded_data = storage.get_sync(&file_id).unwrap();
-    assert_eq!(upload_data, downloaded_data);
-    // Delete file
+    println!("created file id {file_id}");
+
+    let data = "example file content";
+    storage.update_sync(&file_id, data.as_bytes()).unwrap();
+    println!("uploaded data: {data:?}");
+
+    let drive_data = String::from_utf8(storage.get_sync(&file_id).unwrap()).unwrap();
+    assert_eq!(data, &drive_data);
+    println!("downloaded data: {drive_data:?}");
+
     storage.delete_sync(&file_id).unwrap();
+    println!("deleted file id {file_id}");
 }
 ```
 
-Check out the examples:
+## Examples
 ```console
 cargo run --example googledrive
 cargo run --example s3
+cargo run --example disk
 ```

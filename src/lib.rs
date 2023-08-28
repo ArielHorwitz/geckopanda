@@ -4,9 +4,9 @@ use anyhow::Result;
 use async_trait::async_trait;
 use tokio::runtime::Runtime;
 pub mod backends;
-pub use backends::disk::Backend as DiskStorage;
-pub use backends::googledrive::Backend as GoogleDriveStorage;
-pub use backends::s3::Backend as S3Storage;
+pub use backends::localdisk::LocalDiskStorage;
+pub use backends::googledrive::GoogleDriveStorage;
+pub use backends::s3::S3Storage;
 
 /// Metadata of a specific file. Returned by [Storage::list].
 #[derive(Clone, Debug)]
@@ -46,27 +46,27 @@ pub trait Storage {
     /// Delete a file by id.
     async fn delete(&self, file_id: &str) -> Result<()>;
 
-    /// Blocking version of [Self.list()].
+    /// Blocking version of [Storage::list()].
     fn list_sync(&self) -> Result<Vec<ObjectMetadata>> {
         Runtime::new()?.block_on(self.list())
     }
 
-    /// Blocking version of [Self.create()].
+    /// Blocking version of [Storage::create()].
     fn create_sync(&self, file_name: &str) -> Result<String> {
         Runtime::new()?.block_on(self.create(file_name))
     }
 
-    /// Blocking version of [Self.get()].
+    /// Blocking version of [Storage::get()].
     fn get_sync(&self, file_id: &str) -> Result<Vec<u8>> {
         Runtime::new()?.block_on(self.get(file_id))
     }
 
-    /// Blocking version of [Self.update()].
+    /// Blocking version of [Storage::update()].
     fn update_sync(&self, file_id: &str, data: &[u8]) -> Result<()> {
         Runtime::new()?.block_on(self.update(file_id, data))
     }
 
-    /// Blocking version of [Self.delete()].
+    /// Blocking version of [Storage::delete()].
     fn delete_sync(&self, file_id: &str) -> Result<()> {
         Runtime::new()?.block_on(self.delete(file_id))
     }

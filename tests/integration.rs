@@ -1,10 +1,10 @@
 use anyhow::Result;
-use geckopanda::{DiskStorage, GoogleDriveStorage, S3Storage, Storage};
+use geckopanda::{LocalDiskStorage, GoogleDriveStorage, S3Storage, Storage};
 use std::fs::read_to_string;
 
 #[test]
 fn full_disk() -> Result<()> {
-    let storage = DiskStorage::new("storagecache").unwrap();
+    let storage = LocalDiskStorage::new("storagecache").unwrap();
     test_storage(storage)
 }
 

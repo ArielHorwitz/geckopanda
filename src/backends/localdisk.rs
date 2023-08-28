@@ -4,12 +4,19 @@ use async_trait::async_trait;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+/// Provide a path to where the files directory.
+///
+/// ## Example
+/// ```rust
+/// use geckopanda::LocalDiskStorage;
+/// let storage = LocalDiskStorage::new("storagecache").unwrap();
+/// ```
 #[derive(Clone, Debug)]
-pub struct Backend {
+pub struct LocalDiskStorage {
     root: PathBuf,
 }
 
-impl Backend {
+impl LocalDiskStorage {
     pub fn new(root_path: &str) -> Result<Self> {
         let root_path = Path::new(root_path).to_path_buf();
         if !root_path.is_dir() {
@@ -20,7 +27,7 @@ impl Backend {
 }
 
 #[async_trait]
-impl Storage for Backend {
+impl Storage for LocalDiskStorage {
     async fn list(&self) -> Result<Vec<ObjectMetadata>> {
         let contents = self.root.read_dir()?.filter_map(filter_file).collect();
         Ok(contents)

@@ -7,8 +7,23 @@ use s3::{Bucket, Region};
 use serde::Deserialize;
 use toml;
 
+/// ## Backend Setup
+/// Create a new user in your [AWS IAM console](https://console.aws.amazon.com/iam)
+/// and add an inline permission policy (see the `s3permissions-template.json`
+/// file). Then we create an access key and fill in the details of the
+/// `s3config-template.toml` file.
+///
+/// We can pass sensitive data via environment variables, or use the `inlcude_str!`
+/// macro so that sensitive data is baked into the binary when built instead of
+/// being distributed in a separate file.
+///
+/// ## Example
+/// ```rust
+/// use geckopanda::S3Storage;
+/// let storage = S3Storage::new(include_str!("../../s3config.toml")).unwrap();
+/// ```
 #[derive(Clone, Debug)]
-pub struct Backend {
+pub struct S3Storage {
     bucket: Bucket,
 }
 
@@ -21,7 +36,7 @@ struct S3Config {
     access_key_secret: String,
 }
 
-impl Backend {
+impl S3Storage {
     pub fn new(config_data: &str) -> Result<Self> {
         let config: S3Config = toml::from_str(config_data)?;
         let region = if config.endpoint.is_empty() {
@@ -45,7 +60,7 @@ impl Backend {
 }
 
 #[async_trait]
-impl Storage for Backend {
+impl Storage for S3Storage {
     async fn list(&self) -> Result<Vec<ObjectMetadata>> {
         let mut listing = self.bucket.list("".to_owned(), None).await?;
         let contents = listing.pop().expect("expected a single result").contents;

@@ -14,12 +14,28 @@ use std::path::Path;
 use std::pin::Pin;
 use tokio::runtime::Runtime;
 
+/// ## Backend Setup
+/// Create your Google Cloud `oauth2` [client secret](
+/// https://console.cloud.google.com/apis/credentials) and download the client
+/// secret file.
+///
+/// We can pass sensitive data via environment variables, or use the `inlcude_str!`
+/// macro so that sensitive data is baked into the binary when built instead of
+/// being distributed in a separate file.
+///
+/// ## Example
+/// ```rust
+/// use geckopanda::GoogleDriveStorage;
+/// let client_secret = include_str!("../../client_secret.json");
+/// let token_cache = "../../token_cache.json";
+/// let storage = GoogleDriveStorage::new(client_secret, token_cache).unwrap();
+/// ```
 #[derive(Clone)]
-pub struct Backend {
+pub struct GoogleDriveStorage {
     hub: GoogleDriveHub,
 }
 
-impl Backend {
+impl GoogleDriveStorage {
     pub fn new(client_secret: &str, token_cache: &str) -> Result<Self> {
         let get_hub_coro = get_hub(client_secret, token_cache);
         let hub = Runtime::new()?.block_on(get_hub_coro)?;
@@ -28,7 +44,7 @@ impl Backend {
 }
 
 #[async_trait]
-impl Storage for Backend {
+impl Storage for GoogleDriveStorage {
     async fn list(&self) -> Result<Vec<ObjectMetadata>> {
         let (_response, filelist) = self
             .hub

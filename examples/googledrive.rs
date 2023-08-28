@@ -6,6 +6,7 @@ fn main() -> Result<()> {
     binary. Environment variables can also be used to insert secrets. */
     let client_secret = include_str!("../client_secret.json");
     let storage = GoogleDriveStorage::new(client_secret, "tokencache.json")?;
+    println!("created google drive storage");
     let file_id = storage.create_sync("example.file")?;
     println!("created file id {file_id}");
     let data = "example file content";

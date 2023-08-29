@@ -1,12 +1,12 @@
 [package]
 name = "geckopanda"
 description = "Save and load files from local disk, Google Drive, or Amazon S3."
-license = "Unlicense"
-repository = "https://github.com/ArielHorwitz/geckopanda"
 version = "0.1.0"
+repository = "https://github.com/ArielHorwitz/geckopanda"
+documentation = "https://docs.rs/geckopanda/0.1.0/geckopanda"
+authors = ["Ariel Horwitz <dev@ariel.ninja>"]
+license = "Unlicense"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1"

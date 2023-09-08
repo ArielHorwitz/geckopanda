@@ -1,5 +1,5 @@
 use anyhow::Result;
-use geckopanda::{LocalDiskStorage, GoogleDriveStorage, S3Storage, Storage};
+use geckopanda::{GoogleDriveStorage, LocalDiskStorage, S3Storage, Storage};
 use std::fs::read_to_string;
 
 #[test]

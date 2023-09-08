@@ -4,9 +4,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use tokio::runtime::Runtime;
 pub mod backends;
-pub use backends::localdisk::LocalDiskStorage;
-pub use backends::googledrive::GoogleDriveStorage;
-pub use backends::s3::S3Storage;
+pub mod prelude;
 
 /// Metadata of a specific file. Returned by [Storage::list].
 #[derive(Clone, Debug)]

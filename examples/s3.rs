@@ -1,5 +1,5 @@
 use anyhow::Result;
-use geckopanda::{S3Storage, Storage};
+use geckopanda::prelude::*;
 
 fn main() -> Result<()> {
     let config_data = include_str!("../s3config.toml");

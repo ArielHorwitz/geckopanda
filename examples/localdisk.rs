@@ -1,5 +1,5 @@
 use anyhow::Result;
-use geckopanda::{LocalDiskStorage, Storage};
+use geckopanda::prelude::*;
 
 fn main() -> Result<()> {
     let storage = LocalDiskStorage::new("../storagecache")?;

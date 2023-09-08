@@ -7,11 +7,11 @@ These operations can be done either synchronously or asynchronously.
 
 ## Usage
 ```rust
-use geckopanda::{LocalDiskStorage, Storage};
+use geckopanda::prelude::*;
 
 fn main() {
     let storage = LocalDiskStorage::new("./storagecache").unwrap();
-    // See also `geckopanda::GoogleDriveStorage` and `geckopanda::S3Storage`
+    // See also `GoogleDriveStorage` and `S3Storage`
 
     let file_id = storage.create_sync("example.file").unwrap();
     println!("created file id {file_id}");

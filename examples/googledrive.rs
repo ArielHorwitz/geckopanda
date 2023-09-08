@@ -1,5 +1,5 @@
 use anyhow::Result;
-use geckopanda::{GoogleDriveStorage, Storage};
+use geckopanda::prelude::*;
 
 fn main() -> Result<()> {
     let client_secret = include_str!("../client_secret.json");

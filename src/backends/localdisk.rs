@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 ///
 /// ## Example
 /// ```rust
-/// use geckopanda::LocalDiskStorage;
+/// use geckopanda::prelude::*;
 /// let storage = LocalDiskStorage::new("storagecache").unwrap();
 /// ```
 #[derive(Clone, Debug)]

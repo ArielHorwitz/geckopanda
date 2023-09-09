@@ -23,15 +23,15 @@ fn full_s3() -> Result<()> {
 }
 
 fn test_storage(storage: impl Storage) -> Result<()> {
-    let file_count = storage.list_sync().unwrap().len();
-    let file_id = storage.create_sync("test.file").unwrap();
-    assert_eq!(file_count + 1, storage.list_sync().unwrap().len());
+    let file_count = storage.list_blocking().unwrap().len();
+    let file_id = storage.create_blocking("test.file").unwrap();
+    assert_eq!(file_count + 1, storage.list_blocking().unwrap().len());
     let data = "test file content".as_bytes();
-    storage.update_sync(&file_id, data).unwrap();
-    let drive_data = storage.get_sync(&file_id).unwrap();
+    storage.update_blocking(&file_id, data).unwrap();
+    let drive_data = storage.get_blocking(&file_id).unwrap();
     assert_eq!(data, drive_data);
-    assert_eq!(file_count + 1, storage.list_sync().unwrap().len());
-    storage.delete_sync(&file_id).unwrap();
-    assert_eq!(file_count, storage.list_sync().unwrap().len());
+    assert_eq!(file_count + 1, storage.list_blocking().unwrap().len());
+    storage.delete_blocking(&file_id).unwrap();
+    assert_eq!(file_count, storage.list_blocking().unwrap().len());
     Ok(())
 }

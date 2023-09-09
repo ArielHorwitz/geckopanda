@@ -19,7 +19,7 @@ use toml;
 ///
 /// ## Example
 /// ```rust
-/// use geckopanda::S3Storage;
+/// use geckopanda::prelude::*;
 /// let storage = S3Storage::new(include_str!("../../s3config.toml")).unwrap();
 /// ```
 #[derive(Clone, Debug)]

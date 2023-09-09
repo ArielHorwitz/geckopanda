@@ -25,7 +25,7 @@ use tokio::runtime::Runtime;
 ///
 /// ## Example
 /// ```rust
-/// use geckopanda::GoogleDriveStorage;
+/// use geckopanda::prelude::*;
 /// let client_secret = include_str!("../../client_secret.json");
 /// let token_cache = "../../token_cache.json";
 /// let storage = GoogleDriveStorage::new(client_secret, token_cache).unwrap();

@@ -3,12 +3,14 @@ use geckopanda::prelude::*;
 use std::fs::read_to_string;
 
 #[test]
+#[cfg(feature = "localdisk")]
 fn full_disk() -> Result<()> {
     let storage = LocalDiskStorage::new("storagecache").unwrap();
     test_storage(storage)
 }
 
 #[test]
+#[cfg(feature = "google-drive")]
 fn full_google_drive() -> Result<()> {
     let client_secret = read_to_string("client_secret.json").unwrap();
     let storage = GoogleDriveStorage::new(&client_secret, "token_cache.json").unwrap();
@@ -16,6 +18,7 @@ fn full_google_drive() -> Result<()> {
 }
 
 #[test]
+#[cfg(feature = "amazon-s3")]
 fn full_s3() -> Result<()> {
     let config_data = read_to_string("s3config.toml").unwrap();
     let storage = S3Storage::new(&config_data).unwrap();

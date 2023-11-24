@@ -12,10 +12,37 @@ edition = "2021"
 anyhow = "1"
 tokio = { version="1", features=["full"] }
 async-trait = "0.1.73"
-rust-s3 = "0.33"
-google-drive3 = "5.0.2"
-mime = "0.3.17"
-tempfile = "3.7.1"
-webbrowser = "0.8.11"
-serde = { version = "1.0.188", features = ["derive"] }
-toml = "0.7.6"
+rust-s3 = { version = "0.33", optional = true }
+google-drive3 = { version = "5.0.2", optional = true }
+mime = { version = "0.3.17", optional = true }
+tempfile = { version = "3.7.1", optional = true }
+webbrowser = { version = "0.8.11", optional = true }
+serde = { version = "1.0.188", features = ["derive"], optional = true }
+toml = { version = "0.7.6", optional = true }
+
+[features]
+default = ["localdisk", "google-drive", "amazon-s3"]
+localdisk = []
+google-drive = [
+    "dep:google-drive3",
+    "dep:webbrowser",
+    "dep:tempfile",
+    "dep:mime",
+]
+amazon-s3 = ["dep:rust-s3", "dep:toml", "dep:serde"]
+
+[[example]]
+name = "localdisk"
+path = "examples/localdisk.rs"
+required-features = ["localdisk"]
+
+[[example]]
+name = "googledrive"
+path = "examples/googledrive.rs"
+required-features = ["google-drive"]
+
+[[example]]
+name = "s3"
+path = "examples/s3.rs"
+required-features = ["amazon-s3"]
+

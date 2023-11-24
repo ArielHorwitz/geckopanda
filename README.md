@@ -1,5 +1,5 @@
-[![Crate](https://img.shields.io/badge/crates.io-v0.1.0-cc5500?style=for-the-badge)](https://crates.io/crates/geckopanda)
-[![Docs](https://img.shields.io/badge/Docs-116611?style=for-the-badge&logo=docs.rs)](https://docs.rs/geckopanda/latest/geckopanda)
+[![Crate](https://img.shields.io/badge/crates.io-v0.2.0-cc5500?style=for-the-badge)](https://crates.io/crates/geckopanda)
+[![Docs](https://img.shields.io/badge/Docs-116611?style=for-the-badge&logo=docs.rs)](https://docs.rs/geckopanda/0.2.0/geckopanda)
 [![License](https://img.shields.io/badge/Unlicense-blue?style=for-the-badge&logo=unlicense&logoColor=white)](https://unlicense.org)
 
 # GeckoPanda

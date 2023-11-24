@@ -13,9 +13,8 @@ use toml;
 /// file). Then we create an access key and fill in the details of the
 /// `s3config-template.toml` file.
 ///
-/// We can pass sensitive data via environment variables, or use the `inlcude_str!`
-/// macro so that sensitive data is baked into the binary when built instead of
-/// being distributed in a separate file.
+/// We use the `inlcude_str!` macro so that sensitive data is baked into a
+/// binary when built instead of being distributed in a separate file.
 ///
 /// ## Example
 /// ```rust

@@ -37,12 +37,12 @@ path = "examples/localdisk.rs"
 required-features = ["localdisk"]
 
 [[example]]
-name = "googledrive"
-path = "examples/googledrive.rs"
+name = "google-drive"
+path = "examples/google_drive.rs"
 required-features = ["google-drive"]
 
 [[example]]
-name = "s3"
-path = "examples/s3.rs"
+name = "amazon-s3"
+path = "examples/amazon_s3.rs"
 required-features = ["amazon-s3"]
 

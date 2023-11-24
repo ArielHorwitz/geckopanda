@@ -3,8 +3,8 @@ use geckopanda::prelude::*;
 
 fn main() -> Result<()> {
     let config_data = include_str!("../s3config.toml");
-    let storage = S3Storage::new(config_data)?;
-    println!("Created S3 storage");
+    let storage = AmazonS3Storage::new(config_data)?;
+    println!("Created Amazon S3 storage");
 
     let file_id = storage.create_blocking("example.file")?;
     println!("Created file ID: {file_id}");

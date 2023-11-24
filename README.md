@@ -18,7 +18,7 @@ use geckopanda::prelude::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let storage = LocalDiskStorage::new("./storagecache")?;
-    // See also `GoogleDriveStorage` and `S3Storage`
+    // See examples for `GoogleDriveStorage` and `AmazonS3Storage`
 
     let file_id = storage.create_blocking("example.file")?;
     println!("Created file ID: {file_id}");

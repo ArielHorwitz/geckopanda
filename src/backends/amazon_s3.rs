@@ -20,15 +20,16 @@ use toml;
 /// ## Example
 /// ```rust
 /// use geckopanda::prelude::*;
-/// let storage = S3Storage::new(include_str!("../../s3config.toml")).unwrap();
+/// let config = include_str!("../../s3config.toml");
+/// let storage = AmazonS3Storage::new(config).unwrap();
 /// ```
 #[derive(Clone, Debug)]
-pub struct S3Storage {
+pub struct AmazonS3Storage {
     bucket: Bucket,
 }
 
 #[derive(Deserialize)]
-struct S3Config {
+struct AmazonS3Config {
     bucket_name: String,
     region: String,
     endpoint: String,
@@ -36,9 +37,9 @@ struct S3Config {
     access_key_secret: String,
 }
 
-impl S3Storage {
+impl AmazonS3Storage {
     pub fn new(config_data: &str) -> Result<Self> {
-        let config: S3Config = toml::from_str(config_data)?;
+        let config: AmazonS3Config = toml::from_str(config_data)?;
         let region = if config.endpoint.is_empty() {
             config.region.parse()?
         } else {
@@ -60,7 +61,7 @@ impl S3Storage {
 }
 
 #[async_trait]
-impl Storage for S3Storage {
+impl Storage for AmazonS3Storage {
     async fn list(&self) -> Result<Vec<ObjectMetadata>> {
         let mut listing = self.bucket.list("".to_owned(), None).await?;
         let contents = listing.pop().expect("expected a single result").contents;

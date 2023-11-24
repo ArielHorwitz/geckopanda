@@ -12,7 +12,7 @@ fn localdisk() {
 #[cfg(feature = "google-drive")]
 fn google_drive() {
     let client_secret = read_to_string("client_secret.json").unwrap();
-    let storage = GoogleDriveStorage::new(&client_secret, "token_cache.json").unwrap();
+    let storage = GoogleDriveStorage::new(client_secret, "token_cache.json").unwrap();
     test_storage(storage);
 }
 
@@ -20,7 +20,7 @@ fn google_drive() {
 #[cfg(feature = "amazon-s3")]
 fn amazon_s3() {
     let config_data = read_to_string("s3config.toml").unwrap();
-    let storage = AmazonS3Storage::new(&config_data).unwrap();
+    let storage = AmazonS3Storage::new(config_data).unwrap();
     test_storage(storage);
 }
 

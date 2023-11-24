@@ -37,8 +37,9 @@ struct AmazonS3Config {
 }
 
 impl AmazonS3Storage {
-    pub fn new(config_data: &str) -> Result<Self> {
-        let config: AmazonS3Config = toml::from_str(config_data)?;
+    pub fn new(config_data: impl Into<String>) -> Result<Self> {
+        let config_string: String = config_data.into();
+        let config: AmazonS3Config = toml::from_str(config_string.as_str())?;
         let region = if config.endpoint.is_empty() {
             config.region.parse()?
         } else {

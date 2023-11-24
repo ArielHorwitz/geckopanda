@@ -38,8 +38,8 @@ pub struct GoogleDriveStorage {
 }
 
 impl GoogleDriveStorage {
-    pub fn new(client_secret: &str, token_cache: &str) -> Result<Self> {
-        let get_hub_coro = get_hub(client_secret, token_cache);
+    pub fn new(client_secret: impl Into<String>, token_cache: impl Into<String>) -> Result<Self> {
+        let get_hub_coro = get_hub(client_secret.into(), token_cache.into());
         let hub = Runtime::new()?.block_on(get_hub_coro)?;
         Ok(Self { hub })
     }
@@ -134,10 +134,10 @@ impl Storage for GoogleDriveStorage {
 
 type GoogleDriveHub = DriveHub<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>;
 
-async fn get_hub(client_secret: &str, token_cache: &str) -> Result<GoogleDriveHub> {
+async fn get_hub(client_secret: String, token_cache: String) -> Result<GoogleDriveHub> {
     let secret = parse_application_secret(client_secret)?;
     let auth = Authenticator::builder(secret, ReturnMethod::HTTPRedirect)
-        .persist_tokens_to_disk(Path::new(token_cache))
+        .persist_tokens_to_disk(Path::new(&token_cache))
         .flow_delegate(Box::new(BrowserDelegate))
         .build()
         .await?;

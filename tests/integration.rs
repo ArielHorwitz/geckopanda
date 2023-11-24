@@ -20,7 +20,7 @@ fn google_drive() {
 #[cfg(feature = "amazon-s3")]
 fn amazon_s3() {
     let config_data = read_to_string("s3config.toml").unwrap();
-    let storage = S3Storage::new(&config_data).unwrap();
+    let storage = AmazonS3Storage::new(&config_data).unwrap();
     test_storage(storage);
 }
 

@@ -1,9 +1,9 @@
 [package]
 name = "geckopanda"
 description = "Save and load files from local disk, Google Drive, or Amazon S3."
-version = "0.1.0"
+version = "0.2.0"
 repository = "https://github.com/ArielHorwitz/geckopanda"
-documentation = "https://docs.rs/geckopanda/0.1.0/geckopanda"
+documentation = "https://docs.rs/geckopanda/0.2.0/geckopanda"
 authors = ["Ariel Horwitz <dev@ariel.ninja>"]
 license = "Unlicense"
 edition = "2021"

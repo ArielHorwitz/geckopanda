@@ -19,9 +19,11 @@ use tokio::runtime::Runtime;
 /// https://console.cloud.google.com/apis/credentials) and download the client
 /// secret file.
 ///
-/// We can pass sensitive data via environment variables, or use the `inlcude_str!`
-/// macro so that sensitive data is baked into the binary when built instead of
-/// being distributed in a separate file.
+/// We use the `inlcude_str!` macro so that sensitive data is baked into a
+/// binary when built instead of being distributed in a separate file.
+///
+/// The `token_cache` is the file path of the auth token cache - it does not
+/// have to exist.
 ///
 /// ## Example
 /// ```rust

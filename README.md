@@ -10,7 +10,7 @@ Save and load files from local disk, Google Drive, or Amazon S3.
 
 This crate provides the `Storage` trait and several backends that implement it,
 providing a very simple API for listing, creating, updating, and deleting files.
-These operations can be done either synchronously or asynchronously.
+These operations can be done either asynchronously or syncronously (blocking).
 
 ## Usage
 ```rust

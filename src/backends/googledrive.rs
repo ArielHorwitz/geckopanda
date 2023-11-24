@@ -78,8 +78,10 @@ impl Storage for GoogleDriveStorage {
 
     async fn create(&self, file_name: &str) -> Result<String> {
         let mime_type = "application/octet-stream".parse::<Mime>()?;
-        let mut file_metadata = File::default();
-        file_metadata.name = Some(file_name.to_owned());
+        let file_metadata = File {
+            name: Some(file_name.to_owned()),
+            ..Default::default()
+        };
         let (_response, file) = self
             .hub
             .files()
@@ -106,7 +108,7 @@ impl Storage for GoogleDriveStorage {
 
     async fn update(&self, file_id: &str, data: &[u8]) -> Result<()> {
         let mut file = tempfile::tempfile()?;
-        file.write(data)?;
+        file.write_all(data)?;
         let mime_type = "application/octet-stream".parse::<Mime>()?;
         self.hub
             .files()

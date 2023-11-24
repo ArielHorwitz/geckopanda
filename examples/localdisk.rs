@@ -16,8 +16,12 @@ fn main() -> Result<()> {
     assert_eq!(data, &drive_data);
     println!("Downloaded data: {drive_data:?}");
 
-    let total_size: u64 = storage.list_blocking().unwrap().iter()
-        .map(|metadata| metadata.size).sum();
+    let total_size: u64 = storage
+        .list_blocking()
+        .unwrap()
+        .iter()
+        .map(|metadata| metadata.size)
+        .sum();
     println!("Total size: {total_size} bytes");
 
     storage.delete_blocking(&file_id)?;

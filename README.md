@@ -16,8 +16,8 @@ These operations can be done either synchronously or asynchronously.
 ```rust
 use geckopanda::prelude::*;
 
-fn main() {
-    let storage = LocalDiskStorage::new("./storagecache").unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let storage = LocalDiskStorage::new("./storagecache")?;
     // See also `GoogleDriveStorage` and `S3Storage`
 
     let file_id = storage.create_blocking("example.file")?;
@@ -27,12 +27,15 @@ fn main() {
     storage.update_blocking(&file_id, data.as_bytes())?;
     println!("Uploaded data: {data:?}");
 
-    let drive_data = String::from_utf8(storage.get_blocking(&file_id)?)?;
-    assert_eq!(data, &drive_data);
-    println!("Downloaded data: {drive_data:?}");
+    let download_data = String::from_utf8(storage.get_blocking(&file_id)?)?;
+    assert_eq!(data, &download_data);
+    println!("Downloaded data: {download_data:?}");
 
-    let total_size: u64 = storage.list_blocking().unwrap().iter()
-        .map(|metadata| metadata.size).sum();
+    let total_size: u64 = storage
+        .list_blocking()?
+        .iter()
+        .map(|metadata| metadata.size)
+        .sum();
     println!("Total size: {total_size} bytes");
 
     storage.delete_blocking(&file_id)?;

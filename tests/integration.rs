@@ -4,7 +4,7 @@ use std::fs::read_to_string;
 #[test]
 #[cfg(feature = "localdisk")]
 fn localdisk() {
-    let storage = LocalDiskStorage::new("storagecache").unwrap();
+    let storage = LocalDiskStorage::new("testcache/local").unwrap();
     test_storage(storage);
 }
 
@@ -24,14 +24,31 @@ fn amazon_s3() {
     test_storage(storage);
 }
 
+#[test]
+#[cfg(all(feature = "crypto", feature = "localdisk"))]
+fn crypto() {
+    let storage = LocalDiskStorage::new("testcache/crypto").unwrap();
+    let key = "test key";
+    let data = b"test file plaintext data";
+    let file_id = storage.create_blocking("file.test").unwrap();
+    storage
+        .update_encrypt_blocking(&file_id, data, key)
+        .unwrap();
+    let decrypted = storage.get_decrypt_blocking(&file_id, key).unwrap();
+    assert_eq!(data, decrypted.as_slice());
+    let encrypted = std::fs::read(std::path::Path::new("testcache/crypto/file.test")).unwrap();
+    assert_ne!(data, encrypted.as_slice());
+    storage.delete_blocking(&file_id).unwrap();
+}
+
 fn test_storage(storage: impl Storage) {
     let file_count = storage.list_blocking().unwrap().len();
-    let file_id = storage.create_blocking("test.file").unwrap();
+    let file_id = storage.create_blocking("file.test").unwrap();
     assert_eq!(file_count + 1, storage.list_blocking().unwrap().len());
-    let data = "test file content".as_bytes();
+    let data = b"test file content";
     storage.update_blocking(&file_id, data).unwrap();
     let drive_data = storage.get_blocking(&file_id).unwrap();
-    assert_eq!(data, drive_data);
+    assert_eq!(data, drive_data.as_slice());
     assert_eq!(file_count + 1, storage.list_blocking().unwrap().len());
     storage.delete_blocking(&file_id).unwrap();
     assert_eq!(file_count, storage.list_blocking().unwrap().len());

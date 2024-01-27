@@ -1,4 +1,5 @@
 /target
+/testcache
 client_secret.json
 token_cache.json
 s3config.toml

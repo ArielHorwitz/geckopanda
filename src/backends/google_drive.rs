@@ -17,9 +17,9 @@ use tokio::runtime::Runtime;
 /// ## Backend Setup
 /// Create your Google Cloud `oauth2` [client secret](
 /// https://console.cloud.google.com/apis/credentials) and download the client
-/// secret file.
+/// secret file. Make sure it has the `drive.file` scope.
 ///
-/// We use the `inlcude_str!` macro so that sensitive data is baked into a
+/// You may use the `inlcude_str!` macro so that sensitive data is baked into a
 /// binary when built instead of being distributed in a separate file.
 ///
 /// The `token_cache` is the file path of the auth token cache - it does not

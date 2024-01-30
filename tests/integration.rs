@@ -1,3 +1,5 @@
+#![allow(clippy::unwrap_used)]
+
 use geckopanda::prelude::*;
 use std::fs::read_to_string;
 
